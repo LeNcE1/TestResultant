@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">TestResultant</string>
     <string name="action_settings">Settings</string>
-    <string name="internet_false">Включите интернет и перезагрузите</string>
+    <string name="internet_false">Нет подключения к интернету</string>
     <string name="name">name</string>
     <string name="volume">volume</string>
     <string name="amount">amount</string>

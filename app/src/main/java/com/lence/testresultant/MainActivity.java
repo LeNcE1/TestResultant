@@ -1,9 +1,8 @@
 package com.lence.testresultant;
 
-import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -30,25 +29,28 @@ public class MainActivity extends AppCompatActivity implements Mvp {
     Presenter mPresenter;
     Adapter mAdapter;
     Handler mHandler = new Handler();
+    @BindView(R.id.toolbar)
+    Toolbar mToolbar;
     private long mTime = 0L;
+    Context mContext = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setSupportActionBar(mToolbar);
 
         mPresenter = new Presenter(this);
-        if (NetworkUtil.isNetworkConnected(this)) {
-            if (mTime == 0L) {
-                mTime = SystemClock.uptimeMillis();
-                mHandler.removeCallbacks(timeUpdaterRunnable);
-
-            }
+        if (NetworkUtil.isNetworkConnected(mContext)) {
+            showProgress();
+            mPresenter.load();
+        } else showMessage(getString(R.string.internet_false));
+        if (mTime == 0L) {
+            mTime = SystemClock.uptimeMillis();
+            mHandler.removeCallbacks(timeUpdaterRunnable);
         }
-        else showMessage(getString (R.string.internet_false));
+
         LinearLayoutManager manager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(manager);
 
@@ -57,8 +59,10 @@ public class MainActivity extends AppCompatActivity implements Mvp {
 
     private Runnable timeUpdaterRunnable = new Runnable() {
         public void run() {
-            showProgress();
-            mPresenter.load();
+            if (NetworkUtil.isNetworkConnected(mContext)) {
+                showProgress();
+                mPresenter.load();
+            } else showMessage(getString(R.string.internet_false));
             mHandler.postDelayed(this, 15000);
         }
     };
@@ -72,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements Mvp {
     @Override
     protected void onResume() {
         super.onResume();
-        mHandler.postDelayed(timeUpdaterRunnable, 100);
+        mHandler.postDelayed(timeUpdaterRunnable, 15000);
     }
 
     @Override
@@ -91,8 +95,10 @@ public class MainActivity extends AppCompatActivity implements Mvp {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.refresh) {
-            showProgress();
-            mPresenter.load();
+            if (NetworkUtil.isNetworkConnected(this)) {
+                showProgress();
+                mPresenter.load();
+            } else showMessage(getString(R.string.internet_false));
             return true;
         }
 
